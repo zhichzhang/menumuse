@@ -8,10 +8,10 @@
  * email is the credential the session was opened with.
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AuthOverlay, useAuthProfileReady, signOut } from 'deepspace'
-import { ChevronDown, LogOut, Menu, X } from 'lucide-react'
+import { ChevronDown, LogOut } from 'lucide-react'
 import { APP_NAME } from '../constants'
 import type { Role } from '../constants'
 import { nav } from '../nav'
@@ -31,16 +31,10 @@ import {
 export default function Navigation() {
   const { isLoaded, isSignedIn, user, userLoading } = useAuthProfileReady({ requireUser: true })
   const location = useLocation()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const profileReady = !isSignedIn || (!userLoading && !!user)
   const userRole = (user?.role ?? 'anonymous') as Role | 'anonymous'
-
-  // Close the mobile menu when navigating
-  useEffect(() => {
-    setMobileMenuOpen(false)
-  }, [location.pathname])
 
   const visibleNav = nav.filter((item) => {
     if (item.devOnly && !import.meta.env.DEV) return false
@@ -58,10 +52,7 @@ export default function Navigation() {
         key={item.path}
         to={item.path}
         aria-current={active ? 'page' : undefined}
-        className={cn(
-          'px-3 py-1.5 text-sm',
-          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-        )}
+        className={cn('header-action', 'order-nav-link', item.path === '/orders' && 'order-nav-secondary', active && 'active')}
       >
         {item.label}
       </Link>
@@ -70,15 +61,13 @@ export default function Navigation() {
 
   return (
     <>
-      <nav data-testid="app-navigation" className="border-b border-border bg-background">
-        <div className="mx-auto flex h-12 max-w-7xl items-center gap-4 px-4">
-          <Link to="/" className="text-sm font-semibold text-foreground">
-            {APP_NAME}
-          </Link>
-
-          <div className="hidden items-center md:flex">{visibleNav.map(navLink)}</div>
+      <nav data-testid="app-navigation" className="order-site-nav">
+        <div className="order-site-nav-inner">
+          <Link to="/" className="order-site-brand"><span className="brand-mark">M</span>{APP_NAME}</Link>
 
           <div className="flex-1" />
+
+          <div className="order-nav-actions">{visibleNav.map(navLink)}</div>
 
           {!isLoaded ? null : isSignedIn && !profileReady ? (
             /* Signed in, profile still loading — skeleton pill, never the
@@ -143,21 +132,7 @@ export default function Navigation() {
             </button>
           )}
 
-          <button
-            className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground hover:text-foreground md:hidden"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
-          >
-            {mobileMenuOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
-          </button>
         </div>
-
-        {mobileMenuOpen && (
-          <div className="flex flex-col border-t border-border px-2 py-2 md:hidden">
-            {visibleNav.map(navLink)}
-          </div>
-        )}
       </nav>
 
       {showAuthModal && <AuthOverlay onClose={() => setShowAuthModal(false)} />}

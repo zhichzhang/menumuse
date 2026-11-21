@@ -37,6 +37,7 @@ export default function AppLayout() {
             <Suspense fallback={<div className="flex items-center justify-center h-full text-muted-foreground">Loading...</div>}>
               <Outlet />
             </Suspense>
+            <footer className="site-credit">© 2026 Zhicheng Zhang. All rights reserved.</footer>
           </main>
         </div>
       </AuthBoot>

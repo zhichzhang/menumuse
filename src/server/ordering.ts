@@ -1,5 +1,5 @@
 import type { ActionTools } from 'deepspace/worker'
-import { catalog, catalogById, cartTotal, lineIdentity, type CartData, type CartLine, type CatalogItem } from '../data/catalog'
+import { catalog, catalogById, cartTotal, lineIdentity, normalizeModifiers, type CartData, type CartLine, type CatalogItem } from '../data/catalog'
 import normalizationPrompt from './prompts/action-normalization-lite.txt?raw'
 
 export type OrderTurn = {
@@ -13,7 +13,7 @@ export type OrderTurn = {
 }
 
 type Normalized = { status?: string; question?: string; actions?: unknown[] }
-type Proposed = { type?: string; target_text?: string; quantity?: number; modifiers?: Record<string, string>; reference?: { type?: string; action_index?: number; cart_item_id?: string } | null }
+type Proposed = { type?: string; target_text?: string; quantity?: number; modifiers?: Record<string, string>; note?: unknown; reference?: { type?: string; action_index?: number; cart_item_id?: string } | null }
 
 function textFromCompletion(value: unknown): string {
   if (typeof value === 'string') return value
@@ -41,6 +41,24 @@ function resolveItem(target: unknown): CatalogItem | undefined {
   return matches.length === 1 ? matches[0] : undefined
 }
 
+function menuChoices(target: unknown): string[] {
+  if (typeof target !== 'string') return []
+  const needle = normalizeName(target)
+  if (!needle) return []
+  const matches = catalog.filter((item) => {
+    const name = normalizeName(item.name)
+    const category = normalizeName(item.category)
+    return name.includes(needle) || needle.includes(name) || category.includes(needle)
+  })
+  if (matches.length) return matches.map((item) => item.name)
+  const category = catalog.find((item) => {
+    const name = normalizeName(item.category)
+    return new RegExp(`\\b${name.replace(/s$/, '')}s?\\b`).test(needle)
+  })?.category
+  if (category) return catalog.filter((item) => item.category === category).map((item) => item.name)
+  return []
+}
+
 function resolveLine(action: Proposed, lines: CartLine[], lastAdded: CartLine | undefined): CartLine | undefined {
   const reference = action.reference
   if (reference?.type === 'previous_action' && lastAdded) return lastAdded
@@ -53,14 +71,14 @@ function resolveLine(action: Proposed, lines: CartLine[], lastAdded: CartLine | 
 }
 
 function checkedModifiers(item: CatalogItem, proposed: unknown): Record<string, string> | undefined {
-  if (proposed === undefined || proposed === null) return {}
-  if (typeof proposed !== 'object' || Array.isArray(proposed)) return undefined
-  const result: Record<string, string> = {}
-  for (const [key, value] of Object.entries(proposed)) {
-    if (typeof value !== 'string' || !item.modifiers[key]?.includes(value)) return undefined
-    result[key] = value
-  }
-  return result
+  return normalizeModifiers(item, proposed ?? {}) ?? undefined
+}
+
+function checkedNote(value: unknown): string | null {
+  if (value === undefined || value === null) return ''
+  if (typeof value !== 'string') return null
+  const note = value.trim().replace(/\s+/g, ' ')
+  return note.length <= 180 ? note : null
 }
 
 function execute(actions: unknown[], original: CartLine[]) {
@@ -82,18 +100,20 @@ function execute(actions: unknown[], original: CartLine[]) {
     }
     if (action.type === 'add_item') {
       const item = resolveItem(action.target_text)
-      if (!item) return { question: `Which menu item did you mean by “${String(action.target_text ?? 'that')}”?` }
+      if (!item) return { question: `Which menu item did you mean by “${String(action.target_text ?? 'that')}”?`, choices: menuChoices(action.target_text) }
       const quantity = action.quantity ?? 1
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) return { question: 'How many would you like? Choose 1 to 20.' }
       const modifiers = checkedModifiers(item, action.modifiers)
       if (!modifiers) return { question: `Which available options would you like for ${item.name}?` }
-      const found = lines.find((line) => lineIdentity(line.itemId, line.modifiers) === lineIdentity(item.id, modifiers))
+      const note = checkedNote(action.note)
+      if (note === null) return { question: 'Could you shorten the kitchen note?' }
+      const found = lines.find((line) => lineIdentity(line.itemId, line.modifiers, line.note) === lineIdentity(item.id, modifiers, note))
       if (found) {
         if (found.quantity + quantity > 20) return { question: 'The limit is 20 of each selection.' }
         found.quantity += quantity
         lastAdded = found
       } else {
-        lastAdded = { id: crypto.randomUUID(), itemId: item.id, quantity, modifiers }
+        lastAdded = { id: crypto.randomUUID(), itemId: item.id, quantity, modifiers, ...(note ? { note } : {}) }
         lines.push(lastAdded)
       }
       steps.push({ type: 'add_item', item: item.name, outcome: `Added ${quantity} × ${item.name}` })
@@ -112,9 +132,17 @@ function execute(actions: unknown[], original: CartLine[]) {
         line.quantity = quantity!
         steps.push({ type: action.type, item: item.name, outcome: `Set ${item.name} to ${quantity}` })
       } else {
-        const modifiers = checkedModifiers(item, action.modifiers)
-        if (!modifiers || !Object.keys(modifiers).length) return { question: `Which available option would you like for ${item.name}?` }
-        line.modifiers = { ...line.modifiers, ...modifiers }
+        if (action.modifiers && (typeof action.modifiers !== 'object' || Array.isArray(action.modifiers))) return { question: `Which available option would you like for ${item.name}?` }
+        if (!action.note && !Object.keys(action.modifiers ?? {}).length) return { question: `Which available option or kitchen note would you like for ${item.name}?` }
+        const modifiers = checkedModifiers(item, { ...line.modifiers, ...action.modifiers })
+        if (!modifiers) return { question: `Which available option would you like for ${item.name}?` }
+        line.modifiers = modifiers
+        if (action.note !== undefined) {
+          const note = checkedNote(action.note)
+          if (note === null) return { question: 'Could you shorten the kitchen note?' }
+          if (note) line.note = note
+          else delete line.note
+        }
         steps.push({ type: 'modify_item', item: item.name, outcome: `Changed ${item.name}` })
       }
       continue
@@ -138,7 +166,7 @@ export async function runOrderTurn(tools: ActionTools, userId: string, cartId: s
   if (!created.success) return { success: false as const, error: 'Could not start this request. Try again.' }
   const turnId = created.data.recordId
   try {
-    const context = cart.lines.map((line) => ({ id: line.id, item: catalogById.get(line.itemId)?.name, quantity: line.quantity, modifiers: line.modifiers }))
+    const context = cart.lines.map((line) => ({ id: line.id, item: catalogById.get(line.itemId)?.name, quantity: line.quantity, modifiers: line.modifiers, note: line.note }))
     const prompt = normalizationPrompt
       .replace('Bistro AI', 'MenuMuse')
       .replace('{{CURRENT_CART_CONTEXT}}', JSON.stringify(context))
@@ -147,7 +175,7 @@ export async function runOrderTurn(tools: ActionTools, userId: string, cartId: s
     const result = await tools.integration('openai/chat-completion', {
       model: 'gpt-5.4-mini', max_tokens: 700, temperature: 0,
       messages: [
-        { role: 'system', content: `You normalize restaurant requests into JSON. Menu: ${JSON.stringify(catalog.map((item) => ({ id: item.id, name: item.name, modifiers: item.modifiers })))}. Use exact menu names for target_text. Never invent an option. At most four actions.` },
+        { role: 'system', content: `You normalize restaurant requests into JSON. Menu: ${JSON.stringify(catalog.map((item) => ({ id: item.id, name: item.name, modifiers: item.modifiers, defaults: item.defaults, surcharges: item.surcharges })))}. Use exact menu names for target_text. Omitted options use defaults. Include a note only for an explicit kitchen request, up to 180 characters. Never invent an option. At most four actions.` },
         { role: 'user', content: prompt },
       ],
     })
@@ -160,7 +188,11 @@ export async function runOrderTurn(tools: ActionTools, userId: string, cartId: s
     if ('question' in plan && plan.question) {
       const reply = parsed.status === 'needs_clarification' && typeof parsed.question === 'string' ? parsed.question.slice(0, 240) : plan.question
       await tools.update<OrderTurn>('order-turns', turnId, { status: 'clarify', reply })
-      return { success: true as const, data: { reply, status: 'clarify' } }
+      const target = Array.isArray(parsed.actions) ? (parsed.actions[0] as Proposed | undefined)?.target_text : undefined
+      const choices = 'choices' in plan && Array.isArray(plan.choices) && plan.choices.length ? plan.choices : menuChoices(target)
+      const questionChoices = choices.length ? choices : menuChoices(reply)
+      const suggested = questionChoices.length ? questionChoices : menuChoices(message)
+      return { success: true as const, data: { reply, status: 'clarify', choices: suggested } }
     }
     if (!('lines' in plan) || !plan.lines || !('steps' in plan) || !plan.steps) throw new Error('Invalid order plan')
     const reply = plan.steps.length ? `${plan.steps.map((step) => step.outcome).join('. ')}. Subtotal: $${(cartTotal(plan.lines) / 100).toFixed(2)}.` : 'Your order is unchanged.'

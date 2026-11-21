@@ -1,6 +1,6 @@
 import type { ActionHandler, ActionTools } from 'deepspace/worker'
 import type { Env } from '../../worker'
-import { catalogById, cartTotal, lineIdentity, type CartData, type CartLine, type OrderData } from '../data/catalog'
+import { catalogById, cartTotal, lineIdentity, normalizeModifiers, unitPriceCents, type CartData, type CartLine, type OrderData } from '../data/catalog'
 import { runOrderTurn } from '../server/ordering'
 
 const cartIdFor = (userId: string) => `cart-${userId}`
@@ -28,15 +28,7 @@ async function ownCart(tools: ActionTools, userId: string): Promise<{ id: string
 
 function validModifiers(itemId: string, input: unknown): Record<string, string> | null {
   const item = catalogById.get(itemId)
-  if (!item || !input || typeof input !== 'object' || Array.isArray(input)) return null
-  const selections = input as Record<string, unknown>
-  if (Object.keys(selections).some((key) => !(key in item.modifiers))) return null
-  const result: Record<string, string> = {}
-  for (const [group, value] of Object.entries(selections)) {
-    if (typeof value !== 'string' || !item.modifiers[group].includes(value)) return null
-    result[group] = value
-  }
-  return result
+  return item ? normalizeModifiers(item, input) : null
 }
 
 export const actions: Record<string, ActionHandler<Env>> = {
@@ -46,7 +38,10 @@ export const actions: Record<string, ActionHandler<Env>> = {
       if (cart.status !== 'active' || cart.lines.length === 0) return { success: false, error: 'Add an item before placing an order.' }
       const order: OrderData = {
         ownerId: userId,
-        lines: cart.lines.map((line) => ({ ...line, itemName: catalogById.get(line.itemId)?.name, unitPriceCents: catalogById.get(line.itemId)?.priceCents })),
+        lines: cart.lines.map((line) => {
+          const item = catalogById.get(line.itemId)
+          return { ...line, itemName: item?.name, unitPriceCents: item ? unitPriceCents(item, line.modifiers) : undefined }
+        }),
         totalCents: cartTotal(cart.lines), placedAt: new Date().toISOString(),
       }
       const orderId = `order-${userId}-${cart.revision}`
@@ -86,7 +81,7 @@ export const actions: Record<string, ActionHandler<Env>> = {
 
   editCart: async ({ userId, tools, params }) => {
     const operation = params.operation
-    if (!['add', 'setQuantity', 'remove', 'clear'].includes(String(operation))) {
+    if (!['add', 'setQuantity', 'remove', 'clear', 'updateItem'].includes(String(operation))) {
       return { success: false, error: 'Unknown cart operation.' }
     }
 
@@ -108,13 +103,16 @@ export const actions: Record<string, ActionHandler<Env>> = {
         }
         const modifiers = validModifiers(itemId, params.modifiers ?? {})
         if (!modifiers) return { success: false, error: 'Select available options for this item.' }
-        const identity = lineIdentity(itemId, modifiers)
-        const existing = lines.find((line) => lineIdentity(line.itemId, line.modifiers) === identity)
+        if (typeof params.note !== 'string' && params.note !== undefined) return { success: false, error: 'Enter a valid note.' }
+        const note = (params.note ?? '').toString().trim().replace(/\s+/g, ' ')
+        if (note.length > 180) return { success: false, error: 'Keep the note under 180 characters.' }
+        const identity = lineIdentity(itemId, modifiers, note)
+        const existing = lines.find((line) => lineIdentity(line.itemId, line.modifiers, line.note) === identity)
         if (existing) {
           if (existing.quantity + Number(quantity) > 20) return { success: false, error: 'Maximum 20 per item.' }
           existing.quantity += Number(quantity)
         } else {
-          lines.push({ id: crypto.randomUUID(), itemId, quantity: Number(quantity), modifiers })
+          lines.push({ id: crypto.randomUUID(), itemId, quantity: Number(quantity), modifiers, ...(note ? { note } : {}) })
         }
       } else if (operation === 'clear') {
         lines = []
@@ -124,6 +122,22 @@ export const actions: Record<string, ActionHandler<Env>> = {
         if (!line) return { success: false, error: 'This cart item no longer exists.' }
         if (operation === 'remove') {
           lines = lines.filter((entry) => entry.id !== line.id)
+        } else if (operation === 'updateItem') {
+          const modifiers = validModifiers(line.itemId, params.modifiers)
+          if (!modifiers) return { success: false, error: 'Select available options for this item.' }
+          if (typeof params.note !== 'string') return { success: false, error: 'Enter a valid note.' }
+          const note = params.note.trim().replace(/\s+/g, ' ')
+          if (note.length > 180) return { success: false, error: 'Keep the note under 180 characters.' }
+          const duplicate = lines.find((entry) => entry.id !== line.id && lineIdentity(entry.itemId, entry.modifiers, entry.note) === lineIdentity(line.itemId, modifiers, note))
+          if (duplicate) {
+            if (duplicate.quantity + line.quantity > 20) return { success: false, error: 'Maximum 20 per item.' }
+            duplicate.quantity += line.quantity
+            lines = lines.filter((entry) => entry.id !== line.id)
+          } else {
+            line.modifiers = modifiers
+            if (note) line.note = note
+            else delete line.note
+          }
         } else {
           const quantity = params.quantity
           if (!Number.isInteger(quantity) || Number(quantity) < 1 || Number(quantity) > 20) {

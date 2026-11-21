@@ -20,20 +20,22 @@ import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
 import { APP_NAME } from '../constants'
 import { seo } from '../seo'
+import { PublicAuthActions, useOrderSignIn } from '../components/OrderSignIn'
 
 export default function Landing() {
+  const { begin, modal } = useOrderSignIn()
   return (
     <>
       <Seo {...seo} path="/" />
       <div data-testid="static-landing" className="landing">
         <nav className="landing-nav"><Link to="/" className="landing-brand"><span className="brand-mark">M</span><strong>{APP_NAME}</strong></Link>
-          <div className="landing-nav-actions"><Link className="landing-menu-link header-action" to="/menu">Menu ↗</Link><Link className="landing-signin-link header-action" to="/signin?next=%2Forder">Sign in ↗</Link></div></nav>
+          <PublicAuthActions page="landing" begin={begin} /></nav>
         <main className="landing-content">
           <div className="landing-copy"><p className="eyebrow">MenuMuse Bistro</p>
             <h1><span className="hero-copy-line hero-copy-first">Good food.<br /><em>Made yours.</em></span>
               <span className="hero-copy-line hero-copy-second" aria-hidden="true">Your order.<br /><em>In your words.</em></span></h1>
             <div className="landing-actions"><Link className="landing-choice landing-choice-menu" to="/menu"><span>See the menu</span><span aria-hidden="true">↗</span></Link>
-              <Link className="landing-choice landing-choice-order" to="/signin?next=%2Forder"><span>Make it yours</span><span aria-hidden="true">↗</span></Link></div>
+              <button type="button" className="landing-choice landing-choice-order" onClick={() => begin()}><span>Make it yours</span><span aria-hidden="true">↗</span></button></div>
           </div>
           <div className="landing-art" aria-hidden="true">
             <div className="landing-float"><div className="combo-tray" />
@@ -42,7 +44,9 @@ export default function Landing() {
             </div>
           </div>
         </main>
+        <footer className="site-credit">© 2026 Zhicheng Zhang. All rights reserved.</footer>
       </div>
+      {modal}
     </>
   )
 }

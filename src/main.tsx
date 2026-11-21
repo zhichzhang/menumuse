@@ -1,10 +1,49 @@
 import { createRoot, hydrateRoot } from 'react-dom/client'
-// Route-based code splitting keeps authenticated/collaborative pages out of
-// the initial bundle for a public top-level route such as `/`.
-import { routes } from '@generouted/react-router/lazy'
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import type { ComponentType } from 'react'
+import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router'
+import App, { Catch } from './pages/_app'
+import Landing from './pages/index'
 import { installStaleChunkRecovery } from './stale-chunk-recovery'
 import './styles.css'
+
+// Keep the public pages and the authenticated group in one explicit tree.
+// The file-router still generates typed paths, but its runtime catch-all was
+// matching /menu and /signin in the local build. React Router ranks these
+// concrete paths before the final wildcard. Dynamic pages stay code-split.
+function RootRoute() {
+  // Match src/prerender-entry.tsx exactly when hydrating the landing page.
+  return <><App />{' '}<></></>
+}
+
+const page = (load: () => Promise<{ default: ComponentType }>) =>
+  async () => ({ Component: (await load()).default })
+
+const routes: RouteObject[] = [{
+  path: '/',
+  Component: RootRoute,
+  ErrorBoundary: Catch,
+  children: [
+    { index: true, Component: Landing },
+    { path: 'menu', lazy: page(() => import('./pages/menu')) },
+    {
+      lazy: page(() => import('./pages/(app)/_layout')),
+      children: [
+        { path: 'home', lazy: page(() => import('./pages/(app)/home')) },
+        { path: 'signin', lazy: page(() => import('./pages/(app)/signin')) },
+        {
+          lazy: page(() => import('./pages/(app)/(protected)/_layout')),
+          children: [
+            { path: 'order', lazy: page(() => import('./pages/(app)/(protected)/order')) },
+            { path: 'orders', lazy: page(() => import('./pages/(app)/(protected)/orders')) },
+            { path: 'settings', lazy: page(() => import('./pages/(app)/(protected)/settings')) },
+            { path: 'api-status', lazy: page(() => import('./pages/(app)/(protected)/api-status')) },
+          ],
+        },
+      ],
+    },
+    { path: '*', lazy: page(() => import('./pages/[...all]')) },
+  ],
+}]
 
 async function main() {
   const root = document.getElementById('root')!

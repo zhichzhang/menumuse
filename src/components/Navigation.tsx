@@ -63,7 +63,7 @@ export default function Navigation() {
     <>
       <nav data-testid="app-navigation" className="order-site-nav">
         <div className="order-site-nav-inner">
-          <Link to="/" className="order-site-brand"><span className="brand-mark">M</span>{APP_NAME}</Link>
+          <Link to="/" className="order-site-brand" onClick={() => { try { sessionStorage.removeItem('menumuse:sign-in-destination') } catch { /* Storage may be disabled. */ } }}><span className="brand-mark">M</span>{APP_NAME}</Link>
 
           <div className="flex-1" />
 

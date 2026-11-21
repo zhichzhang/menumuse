@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { getAuthToken, useAuthProfileReady, useQuery } from 'deepspace'
-import { ArrowRight, Check, ChevronRight, Minus, PanelRightClose, Pencil, Plus, Search, ShoppingBag, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowRight, Check, ChevronRight, Minus, PanelRightClose, Pencil, Plus, ShoppingBag, Sparkles, Trash2 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { catalog, catalogById, cartTotal, categories, formatPrice, menuPhotoPosition, optionPriceCents, unitPriceCents, type CartData, type CatalogItem, type OrderData } from '../../../data/catalog'
 
@@ -26,7 +26,6 @@ export default function OrderPage() {
   const { records: orders, status: ordersStatus } = useQuery<OrderData>('orders')
   const cart = records.find((record) => record.data.ownerId === user?.id)?.data
   const [category, setCategory] = useState('All')
-  const [search, setSearch] = useState('')
   const selected = catalogById.get(new URLSearchParams(location.search).get('item') ?? '') ?? null
   const [options, setOptions] = useState<Record<string, string>>({})
   const [editingLineId, setEditingLineId] = useState<string | null>(null)
@@ -42,6 +41,12 @@ export default function OrderPage() {
   const [clarification, setClarification] = useState<{ question: string; choices: string[]; original: string } | null>(null)
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null)
   const [cartOpen, setCartOpen] = useState(true)
+
+  useEffect(() => {
+    if (user?.id) {
+      try { sessionStorage.removeItem('menumuse:sign-in-destination') } catch { /* Storage may be disabled. */ }
+    }
+  }, [user?.id])
 
   useEffect(() => {
     if (window.matchMedia('(max-width: 850px)').matches) setCartOpen(false)
@@ -76,9 +81,8 @@ export default function OrderPage() {
   }, [user?.id])
 
   const visible = useMemo(() => catalog.filter((item) =>
-    (category === 'All' || item.category === category) &&
-    item.name.toLowerCase().includes(search.trim().toLowerCase()),
-  ), [category, search])
+    category === 'All' || item.category === category,
+  ), [category])
 
   const lines = cart?.lines ?? []
   const count = lines.reduce((sum, line) => sum + line.quantity, 0)
@@ -94,7 +98,6 @@ export default function OrderPage() {
     setClarification(null)
     setSelectedChoice(null)
     setCategory('All')
-    setSearch('')
     document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -209,8 +212,6 @@ export default function OrderPage() {
               className={category === name ? 'category-pill active' : 'category-pill'}
               onClick={() => setCategory(name)}>{name}</button>)}
           </div>
-          <label className="menu-search"><Search size={18} /><span className="sr-only">Search menu</span>
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the menu" /></label>
         </div>
 
         <div className="menu-heading"><span>{category === 'All' ? 'Choose a favorite' : category}</span><small>{visible.length} choices</small></div>
@@ -223,7 +224,6 @@ export default function OrderPage() {
                 <button className="round-add" type="button" onClick={() => openItem(item)} aria-label={`Choose ${item.name}`}><Plus size={19} /></button></div>
             </div>
           </article>)}
-          {visible.length === 0 && <p className="empty-search">No menu items match your search.</p>}
         </div>
       </section>
 

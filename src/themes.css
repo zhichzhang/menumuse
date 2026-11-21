@@ -16,6 +16,32 @@
  *   4. Switch to it via `data-theme` on <html> in index.html.
  */
 
+[data-theme="menumuse"] {
+  color-scheme: light;
+  --color-background: #fcf8f1;
+  --color-foreground: #292925;
+  --color-card: #fffdf9;
+  --color-card-foreground: #292925;
+  --color-popover: #fffdf9;
+  --color-popover-foreground: #292925;
+  --color-primary: #b94f35;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1e9dd;
+  --color-secondary-foreground: #292925;
+  --color-muted: #f1e9dd;
+  --color-muted-foreground: #786f65;
+  --color-accent: #ebe0d1;
+  --color-accent-foreground: #292925;
+  --color-destructive: #b52f2f;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #e8ded1;
+  --color-input: #e8ded1;
+  --color-ring: #b94f35;
+  --color-shell: #f7f1e8;
+  --color-shell-panel: #fffdf9;
+  --radius: 0.9rem;
+}
+
 /* Paper — light example theme; shows the full token contract incl.
  * `color-scheme: light`. Replace or delete it once the app has its own. */
 [data-theme="paper"] {

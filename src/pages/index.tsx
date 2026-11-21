@@ -25,25 +25,23 @@ export default function Landing() {
   return (
     <>
       <Seo {...seo} path="/" />
-      <div
-        data-testid="static-landing"
-        className="flex min-h-screen flex-col items-center justify-center px-6 text-center"
-      >
-        <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">{APP_NAME}</p>
-        <h1 className="mb-4 max-w-2xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          A DeepSpace app with a static front door
-        </h1>
-        <p className="mb-8 max-w-md text-muted-foreground">
-          This landing page ships no auth call and no realtime connection — it's a
-          plain static page. The live app, with sign-in and synced data, lives
-          behind the link below.
-        </p>
-        <Link
-          to="/home"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          Enter the app
-        </Link>
+      <div data-testid="static-landing" className="landing">
+        <nav className="landing-nav"><Link to="/" className="landing-brand"><span className="brand-mark">M</span><strong>{APP_NAME}</strong></Link>
+          <div className="landing-nav-actions"><Link className="landing-menu-link header-action" to="/menu">Menu ↗</Link><Link className="landing-signin-link header-action" to="/signin?next=%2Forder">Sign in ↗</Link></div></nav>
+        <main className="landing-content">
+          <div className="landing-copy"><p className="eyebrow">MenuMuse Bistro</p>
+            <h1><span className="hero-copy-line hero-copy-first">Good food.<br /><em>Made yours.</em></span>
+              <span className="hero-copy-line hero-copy-second" aria-hidden="true">Your order.<br /><em>In your words.</em></span></h1>
+            <div className="landing-actions"><Link className="landing-choice landing-choice-menu" to="/menu"><span>See the menu</span><span aria-hidden="true">↗</span></Link>
+              <Link className="landing-choice landing-choice-order" to="/signin?next=%2Forder"><span>Make it yours</span><span aria-hidden="true">↗</span></Link></div>
+          </div>
+          <div className="landing-art" aria-hidden="true">
+            <div className="landing-float"><div className="combo-tray" />
+              <div className="combo-piece combo-burger" /><div className="combo-piece combo-chicken" />
+              <div className="combo-piece combo-fries" /><div className="combo-piece combo-cola" />
+            </div>
+          </div>
+        </main>
       </div>
     </>
   )

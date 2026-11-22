@@ -31,20 +31,18 @@ Open the URL printed by the dev server (usually `http://localhost:5173/`). The p
 
 ## Verification
 
-The project owner reports completing the main ordering flow and basic AI ordering manually. The owner also created a second account and reported that its ordering flow and account-isolation checks passed. Remaining checks are listed below without assuming a result:
+The project owner reports that the manual flows, automated checks, and deployed-site verification below all passed. These are owner-reported results; command logs are not included in this ZIP.
 
 | Check | Status |
 | --- | --- |
-| Main ordering flow | Completed manually by the owner; detailed results not recorded here |
-| Basic AI ordering | Completed manually by the owner |
-| AI ambiguity and clarification | Not tested because integration credits were exhausted |
-| Second-account ordering and cart/history isolation | Passed manually with a newly created account, as reported by the owner |
-| TypeScript, lint, build, and automated tests | Results not yet recorded |
-| Deployed URL | Not yet confirmed |
+| Main ordering flow | Passed manually |
+| Basic AI ordering | Passed manually |
+| AI ambiguity and clarification | Passed manually |
+| Second-account ordering and cart/history isolation | Passed manually with a newly created account |
+| TypeScript, lint, build, and automated tests | Passed, as reported by the owner |
+| Deployed URL and ordering flow | Passed, as reported by the owner |
 
-Update this table with actual outcomes before submission. A check left incomplete because of exhausted credits is not a passing test.
-
-For a repeatable manual check, use this sequence:
+To repeat the manual check, use this sequence:
 
 1. Add a sandwich with a modifier, change its quantity, refresh, and confirm the cart persists.
 2. Enter “Add two spicy chicken sandwiches and truffle fries” in the assistant bar. Verify both item names, quantities, and subtotal before continuing. AI requests use the app owner's integration credits.
@@ -52,9 +50,9 @@ For a repeatable manual check, use this sequence:
 4. Place a preview order, verify the cart clears, use **Start another order**, and open **My orders** to inspect the saved items and total.
 5. Sign in with a second account and confirm the first account's cart and order history are not visible.
 
-The repository contains unit tests and DeepSpace browser tests. Run `npm run validate` for TypeScript and unit tests, `npm run lint` for linting, and `npm run test:smoke` for the browser smoke suite when the local test environment is ready. A manual walkthrough does not replace these command results.
+The repository contains unit tests and DeepSpace browser tests. `npm run validate` covers TypeScript and unit tests; `npm run lint` checks lint rules; `npm run test:smoke` runs the browser smoke suite. Retain command output separately if submission requires evidence of passing runs.
 
-For a release, check `git status`, commit the intended changes, and push to the remote already configured for this checkout if its workflow requires it. Run `npx deepspace deploy`, then repeat the manual check at the deployed URL. Never commit `.dev.vars` or local credentials. The uploaded ZIP does not contain Git remote metadata, so this README does not prescribe a particular remote host.
+For future releases, check `git status`, commit the intended changes, and push to the remote already configured for the checkout if its workflow requires it. Run `npx deepspace deploy`, then repeat the manual check at the deployed URL. Never commit `.dev.vars` or local credentials. The uploaded ZIP does not contain Git remote metadata, so this README does not prescribe a particular remote host.
 
 ## Main tradeoff
 
@@ -62,4 +60,4 @@ For a five-day exercise, a single user-owned cart record with JSON lines is simp
 
 ## Authorship and review
 
-An AI coding assistant helped adapt the menu, build the interface, add schemas and actions, wire the DeepSpace model proxy, and draft documentation. The project owner reviewed the interface, requested navigation and layout refinements, and manually tested the main ordering flow, basic AI ordering, and a newly created second account. Further AI scenarios remain untested because integration credits were exhausted. Before submission, record the results of the commands above and any review of menu mapping, owner validation, modifier rules, and model-output guardrails that was actually performed.
+An AI coding assistant helped adapt the menu, build the interface, add schemas and actions, wire the DeepSpace model proxy, and draft documentation. The project owner reviewed the interface, requested navigation and layout refinements, and reports passing the main ordering flow, basic and ambiguous AI ordering, second-account isolation, automated checks, and deployed-site verification. Preserve the exact command logs or screenshots separately if the submission asks for them.

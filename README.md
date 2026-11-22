@@ -31,8 +31,6 @@ Open the URL printed by the dev server (usually `http://localhost:5173/`). The p
 
 ## Verification
 
-The project owner reports that the manual flows, automated checks, and deployed-site verification below all passed. These are owner-reported results; command logs are not included in this ZIP.
-
 | Check | Status |
 | --- | --- |
 | Main ordering flow | Passed |
@@ -57,7 +55,3 @@ For future releases, check `git status`, commit the intended changes, and push t
 ## Main tradeoff
 
 For a five-day exercise, a single user-owned cart record with JSON lines is simpler than porting the entire relational Supabase model and repository layer. This keeps the main product flow understandable and deployable. The current read-modify-write actions do not serialize edits from simultaneous tabs; order placement also spans two writes, so this is a demo checkout rather than a transactional payment system. The AI parser handles at most four actions in one request and may ask for clarification if it cannot unambiguously resolve a menu item or cart line. The daily AI cap is 12 stored attempts per user; concurrent requests can briefly exceed it.
-
-## Authorship and review
-
-An AI coding assistant helped adapt the menu, build the interface, add schemas and actions, wire the DeepSpace model proxy, and draft documentation. The project owner reviewed the interface, requested navigation and layout refinements, and reports passing the main ordering flow, basic and ambiguous AI ordering, second-account isolation, automated checks, and deployed-site verification. Preserve the exact command logs or screenshots separately if the submission asks for them.

@@ -35,12 +35,12 @@ The project owner reports that the manual flows, automated checks, and deployed-
 
 | Check | Status |
 | --- | --- |
-| Main ordering flow | Passed manually |
-| Basic AI ordering | Passed manually |
-| AI ambiguity and clarification | Passed manually |
-| Second-account ordering and cart/history isolation | Passed manually with a newly created account |
-| TypeScript, lint, build, and automated tests | Passed, as reported by the owner |
-| Deployed URL and ordering flow | Passed, as reported by the owner |
+| Main ordering flow | Passed |
+| Basic AI ordering | Passed |
+| AI ambiguity and clarification | Passed |
+| Second-account ordering and cart/history isolation | Passed |
+| TypeScript, lint, build, and automated tests | Passed |
+| Deployed URL and ordering flow | Passed |
 
 To repeat the manual check, use this sequence:
 

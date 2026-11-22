@@ -31,14 +31,14 @@ Open the URL printed by the dev server (usually `http://localhost:5173/`). The p
 
 ## Verification
 
-The project owner reports completing the main ordering flow manually. The following checks have not been confirmed in that walkthrough:
+The project owner reports completing the main ordering flow and basic AI ordering manually. The owner also created a second account and reported that its ordering flow and account-isolation checks passed. Remaining checks are listed below without assuming a result:
 
 | Check | Status |
 | --- | --- |
 | Main ordering flow | Completed manually by the owner; detailed results not recorded here |
 | Basic AI ordering | Completed manually by the owner |
 | AI ambiguity and clarification | Not tested because integration credits were exhausted |
-| Second-account cart and history isolation | Not yet confirmed |
+| Second-account ordering and cart/history isolation | Passed manually with a newly created account, as reported by the owner |
 | TypeScript, lint, build, and automated tests | Results not yet recorded |
 | Deployed URL | Not yet confirmed |
 
@@ -62,4 +62,4 @@ For a five-day exercise, a single user-owned cart record with JSON lines is simp
 
 ## Authorship and review
 
-An AI coding assistant helped adapt the menu, build the interface, add schemas and actions, wire the DeepSpace model proxy, and draft documentation. The project owner reviewed the interface, requested navigation and layout refinements, and manually tested the main ordering flow and basic AI ordering. Further AI scenarios remain untested because integration credits were exhausted. Before submission, record the results of the commands above and any review of menu mapping, owner validation, modifier rules, and model-output guardrails that was actually performed.
+An AI coding assistant helped adapt the menu, build the interface, add schemas and actions, wire the DeepSpace model proxy, and draft documentation. The project owner reviewed the interface, requested navigation and layout refinements, and manually tested the main ordering flow, basic AI ordering, and a newly created second account. Further AI scenarios remain untested because integration credits were exhausted. Before submission, record the results of the commands above and any review of menu mapping, owner validation, modifier rules, and model-output guardrails that was actually performed.

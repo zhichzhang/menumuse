@@ -15,7 +15,7 @@ This adapts my earlier AI Bistro Ordering project. I reused its curated nine-ite
 
 There is no need for an extra external integration: search and payments would add complexity without improving this preview-order workflow.
 
-## Run and verify
+## Run locally
 
 Use Node 22.15+ with npm 11.6+ (or Node 24). Authenticate with your own DeepSpace account; keep `.dev.vars` local and untracked.
 
@@ -23,23 +23,43 @@ Use Node 22.15+ with npm 11.6+ (or Node 24). Authenticate with your own DeepSpac
 npm ci
 npm run type-check
 npm run lint
+npm run build
 npx deepspace dev start
 ```
 
-Then sign in at `http://localhost:5173/`, open `/order`, and try:
+Open the URL printed by the dev server (usually `http://localhost:5173/`). The public home and menu work without signing in; `/order` and `/orders` require an account. The home, menu, ordering, and order-history pages share a consistent navigation style. The ordering page also offers an AI request bar and manual item selection.
+
+## Verification
+
+The project owner reports completing the main ordering flow manually. The following checks have not been confirmed in that walkthrough:
+
+| Check | Status |
+| --- | --- |
+| Main ordering flow | Completed manually by the owner; detailed results not recorded here |
+| Basic AI ordering | Completed manually by the owner |
+| AI ambiguity and clarification | Not tested because integration credits were exhausted |
+| Second-account cart and history isolation | Not yet confirmed |
+| TypeScript, lint, build, and automated tests | Results not yet recorded |
+| Deployed URL | Not yet confirmed |
+
+Update this table with actual outcomes before submission. A check left incomplete because of exhausted credits is not a passing test.
+
+For a repeatable manual check, use this sequence:
 
 1. Add a sandwich with a modifier, change its quantity, refresh, and confirm the cart persists.
-2. Enter “Add two spicy chicken sandwiches and truffle fries” in the assistant bar. Verify both item names, quantities, and subtotal before continuing. One AI request consumes credits.
+2. Enter “Add two spicy chicken sandwiches and truffle fries” in the assistant bar. Verify both item names, quantities, and subtotal before continuing. AI requests use the app owner's integration credits.
 3. Try an ambiguous item request and confirm it asks for clarification without changing the cart.
 4. Place a preview order, verify the cart clears, use **Start another order**, and open **My orders** to inspect the saved items and total.
 5. Sign in with a second account and confirm the first account's cart and order history are not visible.
 
-For a release, commit and push to the GitHub repository, then run `npx deepspace deploy` from that checkout. Confirm the deployed URL through the same sequence. This project was prepared from an uploaded ZIP; local type-check, live integration, and deployment still need to be run in the owner's Windows checkout.
+The repository contains unit tests and DeepSpace browser tests. Run `npm run validate` for TypeScript and unit tests, `npm run lint` for linting, and `npm run test:smoke` for the browser smoke suite when the local test environment is ready. A manual walkthrough does not replace these command results.
+
+For a release, check `git status`, commit the intended changes, and push to the remote already configured for this checkout if its workflow requires it. Run `npx deepspace deploy`, then repeat the manual check at the deployed URL. Never commit `.dev.vars` or local credentials. The uploaded ZIP does not contain Git remote metadata, so this README does not prescribe a particular remote host.
 
 ## Main tradeoff
 
 For a five-day exercise, a single user-owned cart record with JSON lines is simpler than porting the entire relational Supabase model and repository layer. This keeps the main product flow understandable and deployable. The current read-modify-write actions do not serialize edits from simultaneous tabs; order placement also spans two writes, so this is a demo checkout rather than a transactional payment system. The AI parser handles at most four actions in one request and may ask for clarification if it cannot unambiguously resolve a menu item or cart line. The daily AI cap is 12 stored attempts per user; concurrent requests can briefly exceed it.
 
-## Agent work and personal verification
+## Authorship and review
 
-The coding agent migrated the menu, built the web interface, added schemas and actions, wired the DeepSpace model proxy, and wrote this README. Before submitting, I will personally review the menu mapping, owner validation, option checks, and model-output guardrails; run the commands and manual scenarios above; inspect any runtime failures; and document what I changed or could not complete.
+An AI coding assistant helped adapt the menu, build the interface, add schemas and actions, wire the DeepSpace model proxy, and draft documentation. The project owner reviewed the interface, requested navigation and layout refinements, and manually tested the main ordering flow and basic AI ordering. Further AI scenarios remain untested because integration credits were exhausted. Before submission, record the results of the commands above and any review of menu mapping, owner validation, modifier rules, and model-output guardrails that was actually performed.

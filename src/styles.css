@@ -12,7 +12,7 @@
 .header-action:focus-visible { outline: 2px solid #b94f35; outline-offset: 3px; }
 .landing-menu-link { background: transparent; color: #292925; border: 1px solid #292925; }
 .brand-mark { display: grid; place-items: center; width: 35px; height: 35px; background: #b94f35; color: white; border-radius: 50%; font: 800 1.15rem Georgia,serif; letter-spacing: -.1em; padding-right: 3px; }
-.landing-nav strong { font-family: Georgia, serif; font-size: 1.65rem; letter-spacing: -.04em; }
+.landing-brand strong { font: 700 1.65rem/1 Georgia,serif; letter-spacing: -.04em; }
 .landing-content { flex: 1; display: grid; grid-template-columns: 1fr .9fr; max-width: 1550px; width: 100%; margin: auto; align-items: center; padding: 45px clamp(24px, 7vw, 120px); gap: 40px; }
 .landing-copy h1 { height: 2.18em; overflow: hidden; font-family: Georgia, serif; font-size: clamp(2.6rem, 5.6vw, 6.6rem); line-height: 1.04; letter-spacing: -.065em; margin: 25px 0 12px; font-weight: 500; }
 .hero-typed-line { display: block; white-space: nowrap; min-height: 1.04em; }
@@ -37,24 +37,7 @@
 @media (hover: hover) { .landing-art:hover .combo-burger { transform: translate(-23px,-19px) rotate(-11deg); }.landing-art:hover .combo-chicken { transform: translate(25px,-16px) rotate(9deg); }.landing-art:hover .combo-fries { transform: translate(-20px,23px) rotate(-9deg); }.landing-art:hover .combo-cola { transform: translate(19px,24px) rotate(8deg); } }
 @keyframes dish-float { 0%,100% { transform: translateY(7px); } 50% { transform: translateY(-12px); } }
 
-.order-site-nav { background: #fbf2de; border-bottom: 2px solid #242b25; }
-.order-site-nav-inner { display: flex; align-items: center; gap: 16px; min-height: 66px; padding: 8px clamp(16px,4vw,64px); }
-.order-site-brand { display: inline-flex; align-items: center; gap: 9px; font: 700 1.35rem Georgia,serif; color: #242b25; white-space: nowrap; }
-.order-nav-back { cursor: pointer; color: #9d4a36; font-size: .8rem; font-weight: 800; white-space: nowrap; transition: transform .25s ease; }
-.order-nav-back:hover, .order-nav-back:focus-visible { transform: translateX(-4px); }
-.order-nav-actions { display: flex; align-items: center; gap: 9px; flex: none; }
-.order-nav-link { color: #fffaf0; background: #292925; border: 1px solid #292925; }
-.order-nav-link.order-nav-secondary { color: #292925; background: transparent; }
-.order-nav-link.active { border-color: #292925; }
-@media (max-width: 680px) {
-  .order-site-nav-inner { gap: 8px; padding-inline: 12px; }
-  .order-site-brand { font-size: 1rem; gap: 5px; }
-  .order-site-brand .brand-mark { width: 27px; height: 27px; font-size: .9rem; }
-  .order-nav-actions { gap: 5px; }
-  .order-nav-link { padding: 8px; font-size: .69rem; }
-  .order-nav-link:hover, .order-nav-link:focus-visible { padding-inline: 10px; }
-}
-@media (max-width: 420px) { .order-site-brand { font-size: 0; } .order-site-brand .brand-mark { font-size: .9rem; } }
+.order-site-nav { flex: none; background: #fbf2de; }
 .order-shell { display: grid; grid-template-columns: minmax(0,1fr) 360px; align-items: start; background: #fbf2de; }
 .order-main { padding: 45px clamp(25px, 4vw, 72px) 55px; min-width: 0; }
 .order-intro { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding-bottom: 19px; border-bottom: 2px solid #292925; animation: order-reveal .45s ease-out both; }
@@ -171,7 +154,7 @@
 @keyframes agent-pulse { 50% { transform: translateY(-4px); opacity: .4; } } @keyframes agent-spin { to { transform: rotate(360deg); } }
 @media (max-width: 550px) { .category-list { flex-wrap: wrap; justify-content: center; overflow: visible; }.category-pill { flex: 0 1 auto; }.order-toolbar { gap: 18px; } }
 @media (prefers-reduced-motion: reduce) { .cart-success, .cart-success-mark, .cart-ai-reply, .agent-dots i, .agent-spinner { animation: none; }.cart-success a, .cart-success button, .cart-empty-state button, .order-back, .cart-assistant form button { transition: none; } }
-.orders-page { min-height: 100%; background: #fcf8f1; padding: 46px clamp(22px, 6vw, 90px) 70px; }
+.orders-page { min-height: 100%; background: #fbf2de; color: #292925; padding: 46px clamp(22px, 6vw, 90px) 70px; }
 .orders-page > header { margin: 36px 0 34px; }
 .orders-page h1 { font: 400 clamp(2.8rem,5vw,4.6rem) Georgia,serif; letter-spacing: -.05em; margin-top: 7px; }
 .orders-back { display: inline-flex; align-items: center; gap: 7px; color: #292925; background: #fbf2de; border: 1px solid #292925; padding: 10px 14px; font-size: .8rem; font-weight: 800; transition: padding .25s ease; }
@@ -238,9 +221,8 @@
 
 /* A public, print-inspired menu. This page needs no sign-in or data provider. */
 .print-menu { min-height: 100vh; color: #242b25; background: #fbf2de; }
-.print-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px clamp(20px,5vw,76px); border-bottom: 2px solid #242b25; font-size: .75rem; letter-spacing: .1em; font-weight: 800; }
+.print-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 86px; padding: 18px clamp(24px,5vw,84px); border-bottom: 2px solid #242b25; font-size: .75rem; letter-spacing: .1em; font-weight: 800; }
 .print-nav .landing-brand { flex: 0 0 auto; gap: 12px; letter-spacing: 0; }
-.print-nav .landing-brand strong { font: 700 1.65rem Georgia,serif; letter-spacing: -.04em; }
 .print-nav .header-action { background: #292925; color: #fffaf0; }
 .public-menu-actions { display: flex; align-items: center; gap: 12px; }
 .public-account { position: relative; flex: none; margin-left: 8px; letter-spacing: 0; font-weight: 400; }
@@ -258,7 +240,8 @@
 .public-account-menu button:hover, .public-account-menu button:focus-visible { background: #f5e8d5; }
 .public-account-loading { width: 41px; height: 41px; margin-left: 8px; border-radius: 50%; background: #e8dcc9; }
 @media (max-width: 1050px) { .public-account-name { display: none; } }
-@media (max-width: 600px) { .print-nav .landing-brand strong { font-size: 1.12rem; }.print-nav .header-action { padding: 9px 10px; font-size: .72rem; }.public-account { margin-left: 0; }.public-account-trigger { padding: 3px 6px 3px 3px; }.public-account-trigger img, .public-account-initial { width: 27px; height: 27px; } }
+@media (max-width: 600px) { .print-nav .header-action { padding: 9px 10px; font-size: .72rem; }.public-account { margin-left: 0; }.public-account-trigger { padding: 3px 6px 3px 3px; }.public-account-trigger img, .public-account-initial { width: 27px; height: 27px; } }
+@media (max-width: 550px) { .print-nav .landing-brand strong { display: none; } }
 .landing-nav .public-orders-link, .print-nav .public-orders-link { color: #292925; background: transparent; border: 1px solid #292925; }
 .landing-nav .public-orders-link:hover, .landing-nav .public-orders-link:focus-visible, .print-nav .public-orders-link:hover, .print-nav .public-orders-link:focus-visible { padding-inline: 26px; }
 .print-masthead { padding: 37px clamp(20px,5vw,76px) 25px; text-align: center; border-bottom: 5px double #242b25; }
@@ -306,7 +289,7 @@
 @media (max-width: 900px) { .print-items { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 700px) { .print-items { grid-template-columns: 1fr; max-width: 500px; margin-inline: auto; gap: 22px; } .print-photo { aspect-ratio: 1.25; } .print-item-copy { min-height: 86px; } .print-section-heading em { display: none; } }
 @media (max-width: 600px) { .print-masthead h1 { font-size: clamp(3.6rem, 15vw, 4.7rem); }.print-masthead h1 span { margin-left: 5px; }.print-masthead > div { justify-content: space-between; gap: 15px; }.print-masthead > div span { display: inline; font-size: .6rem; }.print-index { flex-direction: column; align-items: center; gap: 2px; text-align: center; }.print-section-heading { flex-direction: column; align-items: center; gap: 6px; text-align: center; }.print-footer { padding-block: 24px; }.public-menu-actions { gap: 7px; } }
-@media (max-width: 430px) { .print-nav { padding-inline: 12px; gap: 6px; }.print-nav .landing-brand { gap: 5px; }.print-nav .landing-brand strong { font-size: .95rem; }.print-nav .header-action { padding-inline: 7px; }.print-content { padding-inline: 18px; } }
+@media (max-width: 430px) { .print-nav { padding-inline: 12px; gap: 6px; }.print-nav .landing-brand { gap: 5px; }.print-nav .header-action { padding-inline: 7px; }.print-content { padding-inline: 18px; } }
 
 /* Scan local source + SDK components for Tailwind class usage */
 @source "./**/*.{ts,tsx}";

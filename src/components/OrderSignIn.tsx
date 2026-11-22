@@ -94,7 +94,7 @@ function LivePublicActions({ page, begin }: { page: 'landing' | 'menu'; begin: (
   return <PublicActions page={page} begin={begin} signedIn={isLoaded && isSignedIn} profile={profile} />
 }
 
-function PublicProfileMenu({ user }: { user: PublicProfile }) {
+export function PublicProfileMenu({ user, navigationTestIds = false }: { user: PublicProfile; navigationTestIds?: boolean }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
 
@@ -115,8 +115,9 @@ function PublicProfileMenu({ user }: { user: PublicProfile }) {
   return <div className="public-account" ref={root}>
     <button type="button" className="public-account-trigger" aria-label="Account menu" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
       {user.imageUrl ? <img src={user.imageUrl} alt="" referrerPolicy="no-referrer" /> : <span className="public-account-initial">{(user.name?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}</span>}
-      <span className="public-account-name">{user.name || user.email || 'Account'}</span><span aria-hidden="true">⌄</span>
+      <span className="public-account-name" data-testid={navigationTestIds ? 'nav-user-name' : undefined}>{user.name || user.email || 'Account'}</span><span aria-hidden="true">⌄</span>
     </button>
+    {navigationTestIds && <span className="sr-only" data-testid="nav-user-email">{user.email}</span>}
     {open && <div className="public-account-menu">
       <div><strong>{user.name || 'Signed in'}</strong><small>{user.email}</small></div>
       <button type="button" onClick={() => { setOpen(false); void signOut() }}>↪ Sign out</button>

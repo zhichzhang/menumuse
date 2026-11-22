@@ -49,12 +49,19 @@ const menuRules: Record<string, { defaults: Record<string, string>; surcharges: 
 export const catalog: CatalogItem[] = menu.categories.flatMap((category) =>
   category.items.map((item) => {
     const rule = menuRules[item.id]
+    // JSON inference unions every dish's keys, marking other dishes' groups
+    // as optional. Build the actual groups so none can contain undefined.
+    const modifiers: Record<string, string[]> = {}
+    for (const [group, choices] of Object.entries(item.modifiers)) {
+      if (choices) modifiers[group] = choices
+    }
+    if (rule.addOns) modifiers.add_on = rule.addOns
     return {
       id: item.id,
       name: item.name,
       category: category.name,
       priceCents: Math.round(item.price * 100),
-      modifiers: { ...item.modifiers, ...(rule.addOns ? { add_on: rule.addOns } : {}) },
+      modifiers,
       defaults: rule.defaults,
       surcharges: rule.surcharges,
     }
